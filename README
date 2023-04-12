@@ -1,0 +1,108 @@
+PySpark Data Pipeline
+---------------------
+
+This PySpark data pipeline demonstrates how to read data from an SQL source, process it through Kafka, store it in S3, perform transformations using a layered approach (Raw, Silver, and Gold), and finally store the processed data in a warehouse such as Redshift.
+
+Prerequisites
+-------------
+
+	Python 3.7 or later
+	Apache Spark 3.2.1 or later
+	MySQL database with the "Sales Transactions Dataset Weekly" from Kaggle
+	Kafka instance
+	Amazon S3 bucket
+	Amazon Redshift cluster
+	
+Setup
+-----
+
+cd DataPipeline
+Update the configuration values in the config/settings.py file with your actual database, Kafka, S3, and Redshift settings:
+
+	# Database configuration
+	DB_CONFIG = {
+		'driver': 'com.mysql.jdbc.Driver',
+		'url': 'jdbc:mysql://your_db_host:3306/your_db_name',
+		'user': 'your_db_user',
+		'password': 'your_db_password'
+	}
+
+	# Kafka configuration
+	KAFKA_CONFIG = {
+		'bootstrap_servers': 'your_kafka_bootstrap_servers',
+		'topic': 'your_kafka_topic'
+	}
+
+	# S3 configuration
+	S3_CONFIG = {
+		'access_key': 'your_aws_access_key',
+		'secret_key': 'your_aws_secret_key',
+		'bucket': 'your_s3_bucket'
+	}
+
+	# Redshift configuration
+	REDSHIFT_CONFIG = {
+		'url': 'jdbc:redshift://your_redshift_cluster_endpoint:5439/your_db_name',
+		'user': 'your_redshift_user',
+		'password': 'your_redshift_password'
+	}
+	
+Ensure that your AWS credentials are configured correctly, either using environment variables or by configuring the Hadoop properties in your SparkSession.
+
+Running the Data Pipeline
+-------------------------
+
+You can run the data pipeline using the spark-submit command. Make sure to include the necessary dependencies like mysql-connector-java, kafka-clients, spark-sql-kafka, and aws-java-sdk:
+
+spark-submit \
+  --packages mysql:mysql-connector-java:8.0.27,org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1,org.apache.hadoop:hadoop-aws:3.2.0,com.amazon.redshift:redshift-jdbc42:2.1.1 \
+  main.py
+
+Alternatively, you can run the PySpark data pipeline on an EMR cluster or a Databricks environment. In this case, you'll need to configure the dependencies for each respective service.
+
+Project Structure
+------------------
+
+DataPipeline/
+├── config/
+│   ├── __init__.py
+│   ├── settings.py
+│   └── logging_config.py
+├── utils/
+│   ├── __init__.py
+│   ├── exceptions.py
+│   └── logger.py
+├── modules/
+│   ├── __init__.py
+│   ├── raw_layer.py
+│   ├── silver_layer.py
+│   └── gold_layer.py
+└── main.py
+|___requirements.txt
+├── tests/
+│   ├── __init__.py
+│   ├── test_raw_layer.py
+│   ├── test_silver_layer.py
+│   └── test_gold_layer.py
+
+Pipeline Stages
+---------------
+
+Raw Layer: Reads data from the MySQL database and writes it to Kafka. Then, it reads the data from Kafka and saves it as Parquet files in the S3 raw_layer directory.
+Silver Layer: Reads raw data from S3, performs basic data transformations, and saves the processed data as Parquet files in the S3 silver_layer directory.
+
+Gold Layer: Reads the Silver data from S3, performs aggregations, and saves the aggregated data in the Redshift gold_layer table.
+
+Data Transformation Logic
+-------------------------
+
+Raw Layer: The raw layer reads data from the MySQL database and writes it to Kafka. Then, it reads the data from Kafka and saves it as Parquet files in the S3 raw_layer directory.
+Silver Layer: The silver layer reads raw data from S3, calculates the week_start and week_end dates based on the date column, and saves the processed data as Parquet files in the S3 silver_layer directory.
+Gold Layer: The gold layer reads the Silver data from S3, groups the data by week_start, week_end, and product_id, and calculates the total quantity sold for each group. The aggregated data is then saved in the Redshift gold_layer table.
+
+Error Handling and Logging
+--------------------------
+The data pipeline uses a custom PipelineException class to handle errors specific to the pipeline.
+The Python logging library is used for logging throughout the pipeline. The logging configuration is defined in the config/logging_config.py file.
+
+

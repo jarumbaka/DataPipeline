@@ -1,0 +1,36 @@
+Running Unit Tests for PySpark Data Pipeline
+--------------------------------------------
+
+This guide will help you set up and run unit tests for the PySpark data pipeline using the pytest framework.
+
+Prerequisites
+-------------
+	Python 3.7 or later
+	PySpark 3.2.1 or later
+	
+Setup
+
+1. Install the required Python packages for testing:
+   pip install pytest pyspark-testing
+   
+2. Create a tests directory at the project root and create test files for each module inside it:
+
+DataPipeline/
+├── tests/
+│   ├── __init__.py
+│   ├── test_raw_layer.py
+│   ├── test_silver_layer.py
+│   └── test_gold_layer.py
+
+
+Replace the placeholders in the test files with appropriate test values, such as the test database URL, Kafka bootstrap servers, S3 bucket, and Redshift cluster information. You can also use a local file system or a mock S3 bucket for testing purposes.
+
+Ensure your AWS credentials are configured correctly, either using environment variables or by configuring the Hadoop properties in your SparkSession.
+
+Running the Tests
+-----------------
+To run the unit tests, navigate to the root directory of the project and execute the following command
+	pytest tests/
+	
+The pytest framework will discover and run all the test cases in the tests directory. 
+If any of the tests fail, pytest will report the failures, and you can investigate the cause of the failure.
